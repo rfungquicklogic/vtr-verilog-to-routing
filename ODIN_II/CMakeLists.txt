@@ -58,7 +58,14 @@ target_link_libraries(libodin_ii
 
 #Create the executable
 add_executable(odin_II ${EXEC_SOURCES})
-target_link_libraries(odin_II
-                        libodin_ii)
+
+if(WITH_LIB_RTL)
+	target_link_libraries(odin_II
+	                        librtlnumber
+	                        libodin_ii)
+else()
+	target_link_libraries(odin_II
+	                        libodin_ii)
+endif()
 
 install(TARGETS odin_II libodin_ii DESTINATION bin)

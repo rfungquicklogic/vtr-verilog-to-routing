@@ -38,6 +38,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "vtr_util.h"
 #include "vtr_memory.h"
 
+#ifdef WITH_LIB_RTL
+#incude "VNumber.hpp"
+#endif /* #ifdef WITH_LIB_RTL */
+
 extern int yylineno;
 
 STRING_CACHE *defines_for_file_sc;

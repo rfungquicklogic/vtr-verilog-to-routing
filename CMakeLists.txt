@@ -23,6 +23,7 @@ option(VTR_ENABLE_COVERAGE "Enable code coverage tracking (gcov)" OFF)
 option(VTR_ENABLE_DEBUG_LOGGING "Enable debug logging" OFF)
 
 option(WITH_BLIFEXPLORER "Enable build with blifexplorer" OFF)
+option(WITH_LIB_RTL "Enable build with librtlnumber" OFF)
 option(WITH_OLD_ABC "Enable build with old abc" OFF)
 
 set(VTR_VERSION_MAJOR 8)
@@ -320,6 +321,15 @@ set_target_properties(libtatum
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libs/EXTERNAL/libtatum"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libs/EXTERNAL/libtatum"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libs/EXTERNAL/libtatum")
+
+if(WITH_LIB_RTL)
+	set_target_properties(librtlnumber rtl_number
+	    PROPERTIES
+	    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libs/librtlnumber"
+	    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libs/librtlnumber"
+	    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/libs/librtlnumber")
+endif()
+
 set_target_properties(libabc abc 
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/abc"
