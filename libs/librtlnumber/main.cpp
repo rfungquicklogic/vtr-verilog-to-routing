@@ -35,21 +35,20 @@ static std::string arithmetic(std::string op, std::string a_in)
 	VNumber a(a_in);
 	
 	/* return Process Operator via ternary */
-	VNumber result/* TODO: Get return as VNumber itself */(
-							(op == "~")		?		V_BITWISE_NOT(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "-")		?		V_MINUS(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "+")		?		V_ADD(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "&")		?		V_BITWISE_AND(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "|")		?		V_BITWISE_OR(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "^")		?		V_BITWISE_XOR(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "~&")	?		V_BITWISE_NAND(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "~|")	?		V_BITWISE_NOR(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "~^"	
-							|| op == "^~")	?		V_BITWISE_XNOR(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-							(op == "!")		?		V_LOGICAL_NOT(/* TODO: Pass in VNumber itself */a.to_bitstring()):
-													bad_ops(op));
-
-	return result.to_bitstring();
+	return (
+		(op == "~")		?		(~a):
+		(op == "-")		?		(-a):
+		(op == "+")		?		(+a):
+		(op == "&")		?		V_BITWISE_AND(a):
+		(op == "|")		?		V_BITWISE_OR(a):
+		(op == "^")		?		V_BITWISE_XOR(a):
+		(op == "~&")	?		V_BITWISE_NAND(a):
+		(op == "~|")	?		V_BITWISE_NOR(a):
+		(op == "~^"	
+		|| op == "^~")	?		V_BITWISE_XNOR(a):
+		(op == "!")		?		(!a):
+								bad_ops(op)
+	).to_string();
 }
 
 static std::string arithmetic(std::string a_in, std::string op, std::string b_in)
@@ -58,41 +57,41 @@ static std::string arithmetic(std::string a_in, std::string op, std::string b_in
 	VNumber b(b_in);
 	
 	/* return Process Operator via ternary */
-	VNumber result/* TODO: Get return as VNumber itself */(	/*	Reduction Ops	*/
-							(op == "&")		?		V_BITWISE_AND(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "|")		?		V_BITWISE_OR(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "^")		?		V_BITWISE_XOR(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "~&")	?		V_BITWISE_NAND(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "~|")	?		V_BITWISE_NOR(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "~^"	
-							|| op == "~^")	?		V_BITWISE_XNOR(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							/*	Case test	*/
-							(op == "===" )	?		V_CASE_EQUAL(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "!==")	?		V_CASE_NOT_EQUAL(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							/*	Shift Operator	*/
-							(op == "<<")	?		V_SHIFT_LEFT(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "<<<")	?		V_SIGNED_SHIFT_LEFT(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == ">>")	?		V_SHIFT_RIGHT(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == ">>>")	?		V_SIGNED_SHIFT_RIGHT(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							/* Logical Operators */
-							(op == "&&")	?		V_LOGICAL_AND(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "||")	?		V_LOGICAL_OR(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "<")		?		V_LT(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):																																													
-							(op == ">")		?		V_GT(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "<=")	?		V_LE(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == ">=")	?		V_GE(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "==")	?		V_EQUAL(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "!=")	?		V_NOT_EQUAL(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							/* arithmetic Operators */																
-							(op == "+")		?		V_ADD(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "-")		?		V_MINUS(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "*")		?		V_MULTIPLY(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "**")	?		V_POWER(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							/* cannot div by 0 */
-							(op == "/")		?		V_DIV(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-							(op == "%")		?		V_MOD(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring()):
-													bad_ops(op));
-	return result.to_bitstring();
+	return (
+		(op == "&")		?		(a & b):
+		(op == "|")		?		(a | b):
+		(op == "^")		?		(a ^ b):
+		(op == "~&")	?		V_BITWISE_NAND(a, b):
+		(op == "~|")	?		V_BITWISE_NOR(a, b):
+		(op == "~^"	
+		|| op == "^~")	?		V_BITWISE_XNOR(a, b):
+		/*	Case test	*/
+		(op == "===" )	?		V_CASE_EQUAL(a, b):
+		(op == "!==")	?		V_CASE_NOT_EQUAL(a, b):
+		/*	Shift Operator	*/
+		(op == "<<")	?		(a << b):
+		(op == "<<<")	?		V_SIGNED_SHIFT_LEFT(a, b):
+		(op == ">>")	?		(a >> b):
+		(op == ">>>")	?		V_SIGNED_SHIFT_RIGHT(a, b):
+		/* Logical Operators */
+		(op == "&&")	?		(a && b):
+		(op == "||")	?		(a || b):
+		(op == "<")		?		(a < b):																																													
+		(op == ">")		?		(a > b):
+		(op == "<=")	?		(a <= b):
+		(op == ">=")	?		(a >= b):
+		(op == "==")	?		(a == b):
+		(op == "!=")	?		(a != b):
+		/* arithmetic Operators */																
+		(op == "+")		?		(a + b):
+		(op == "-")		?		(a - b):
+		(op == "*")		?		(a * b):
+		(op == "**")	?		V_POWER(a, b):
+		/* cannot div by 0 */
+		(op == "/")		?		(a / b):
+		(op == "%")		?		(a % b):
+								bad_ops(op)
+	).to_string();
 }
 
 static std::string arithmetic(std::string a_in, std::string op1 ,std::string b_in, std::string op2, std::string c_in)
@@ -102,10 +101,9 @@ static std::string arithmetic(std::string a_in, std::string op1 ,std::string b_i
 	VNumber c(c_in);
 	
 	/* return Process Operator via ternary */
-	VNumber result/* TODO: Get return as VNumber itself */(	(op1 != "?")	?	bad_ops(op1):
-							(op2 != ":")	?	bad_ops(op2):
-												V_TERNARY(/* TODO: Pass in VNumber itself */a.to_bitstring(), /* TODO: Pass in VNumber itself */b.to_bitstring(), /* TODO: Pass in VNumber itself */c.to_bitstring()));
-	return result.to_bitstring();
+	return(	(op1 == "?" && op2 == ":")	?	V_TERNARY(a, b, c):
+											bad_ops("?:")
+	).to_string();
 }
 
 int main(int argc, char** argv) 
@@ -117,7 +115,7 @@ int main(int argc, char** argv)
 	{
 		VNumber input_2(input[2]);
 
-		std::cout << (V_TRUE(input_2.to_bitstring()) ? "pass" : "fail") << std::endl;
+		std::cout << (V_TRUE(input_2) ? "pass" : "fail") << std::endl;
 	}
 
 	else if		(argc == 3)	std::cout << arithmetic(input[1], input[2]) << std::endl;

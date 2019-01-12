@@ -10,7 +10,7 @@ SRC=
 
 #Build everything
 all: 
-	clang++ -Weverything -ggdb -I src/*.hpp src/*.cpp main.cpp -o rtl_number
+	clang++ -Weverything -ggdb -Isrc/include src/*.cpp main.cpp -o rtl_number
 
 clean:
 	rm -Rf ./rtl_number

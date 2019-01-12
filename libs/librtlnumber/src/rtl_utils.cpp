@@ -9,110 +9,14 @@
 #include <algorithm>
 #include <iostream>
 
-// this sets the default bit width
-
-/***
- *     __    ___     __  ___  __          __                     __        ___  __   __  
- *    |__) |  |     /__`  |  |__) | |\ | / _`    |__|  /\  |\ | |  \ |    |__  |__) /__` 
- *    |__) |  |     .__/  |  |  \ | | \| \__>    |  | /~~\ | \| |__/ |___ |___ |  \ .__/ 
- *    
- *  These utils read input string written in litle endian                                                                                   
- */
-
-#define DC_CHR "xXzZ"
-#define DEC_CHR "0123456789"
-#define HEX_CHR "xZzZ0123456789aAbBcCdDeEfF"
-#define BIN_CHR "xXzZ01"
-#define OCT_CHR "xXzZ01234567"
-
-bool is_dont_care_string(const std::string& input)
+inline void __assert_Werr(bool cond, const char *FUNCT, int LINE, std::string error_string)
 {
-    return (input.find(DC_CHR) != std::string::npos);
-}
-bool is_string_of_radix(const std::string& input, short radix)
-{
-	switch(radix)
-	{
-		case 2:		return (!input.empty() && input.find_first_not_of(BIN_CHR) == std::string::npos);
-		case 8:	    return (!input.empty() && input.find_first_not_of(DEC_CHR) == std::string::npos);
-		case 10:	return (!input.empty() && input.find_first_not_of(DEC_CHR) == std::string::npos);
-		case 16:	return (!input.empty() && input.find_first_not_of(HEX_CHR) == std::string::npos);
-		default:	return false;
-	}
+    if (!cond) { 
+        std::cout << "ERROR:" << FUNCT << "::" << std::to_string(LINE) << "\t" << error_string << std::endl;
+        std::abort();
+    }
 }
 
-char _bad_value(const char test, const char *FUNCT, int LINE)
-{	
-	std::cout << "INVALID BIT INPUT: (" << std::string(1,test) << ")@" << FUNCT << "::" << std::to_string(LINE) << std::endl;	
-	return test; 
-}
-
-std::string _bad_value(const std::string& test, const char *FUNCT, int LINE)
-{	
-	std::cout << "INVALID BIT INPUT: (" << test << ")@" << FUNCT << "::" << std::to_string(LINE) << std::endl;	
-	return test; 
-}
-
-void _assert_not_dc_string(const std::string& input, const char *FUNCT, int LINE)
-{
-	if (is_dont_care_string(input))
-	{
-		std::cout << "Invalid Number contains dont care values. number: " << input << " @" << FUNCT << "::" << std::to_string(LINE) << std::endl;
-		std::abort();
-	}
-}
-
-void _assert_string_of_radix(const std::string& input, short radix, const char *FUNCT, int LINE)
-{
-	if(!is_string_of_radix(input, radix))
-	{
-		std::cout << "Invalid bitstring of radix input " << std::to_string(radix) << " number: " << input << " @" << FUNCT << "::" << std::to_string(LINE) << std::endl;
-		std::abort();
-	}
-}
-
-void _assert_bits_len_within_limit(const std::string& input, const char *FUNCT, int LINE)
-{
-    if( input.size() >= DEFAULT_BIT_WIDTH )
-	{
-		std::cout << "Invalid Number. Too large to be converted. number: " << input << " upper limit: " << std::to_string(DEFAULT_BIT_WIDTH) << " @" << FUNCT << "::" << std::to_string(LINE) << std::endl;
-		std::abort();
-	}
-}
-
-long long _str_to_int(const std::string& input, short radix, const char *FUNCT, int LINE)
-{
-    _assert_not_dc_string(input, FUNCT, LINE);
-	_assert_string_of_radix(input, radix, FUNCT, LINE);
-    _assert_bits_len_within_limit(input,FUNCT, LINE);
-	
-	return std::strtoll(input.c_str(),NULL,radix);
-}
-
-char _bits_to_hex(std::string revers, const char *FUNCT, int LINE)
-{
-    if     ( revers == "0000" )              return '0';
-    else if( revers == "0001" )              return '1';
-    else if( revers == "0010" )              return '2';
-    else if( revers == "0011" )              return '3';
-    else if( revers == "0100" )              return '4';
-    else if( revers == "0101" )              return '5';
-    else if( revers == "0110" )              return '6';
-    else if( revers == "0111" )              return '7';
-    else if( revers == "1000" )              return '8';
-    else if( revers == "1001" )              return '9';
-    else if( revers == "1010" )              return 'a';
-    else if( revers == "1011" )              return 'b';
-    else if( revers == "1100" )              return 'c';
-    else if( revers == "1101" )              return 'd';
-    else if( revers == "1110" )              return 'e';
-    else if( revers == "1111" )              return 'f';
-    else if( revers == "xxxx" )              return 'x';
-    else if( revers == "zzzz" )              return 'z';
-    else{    _bad_value(revers, FUNCT, LINE);return 'x';}
-}
-
-#define radix_digit_to_bits_str(num,radix) _radix_digit_to_bits_str(num,radix,__func__, __LINE__)
 inline static std::string _radix_digit_to_bits_str(const char digit, short radix,  const char *FUNCT, int LINE)
 {
     switch(radix)
@@ -126,7 +30,9 @@ inline static std::string _radix_digit_to_bits_str(const char digit, short radix
                 case 'x': return "x";
                 case 'z': return "z";
                 default:  
-                    _bad_value(digit, FUNCT, LINE);
+                    _assert_Werr( false, FUNCT, LINE,
+                            "INVALID BIT INPUT: " + std::string(1,digit) 
+                    );
                     break;
             }
             break;
@@ -146,7 +52,9 @@ inline static std::string _radix_digit_to_bits_str(const char digit, short radix
                 case 'x': return "xxx";
                 case 'z': return "zzz";
                 default:  
-                    _bad_value(digit, FUNCT, LINE);
+                    _assert_Werr( false, FUNCT, LINE,
+                            "INVALID BIT INPUT: " + std::string(1,digit) 
+                    );
                     break;
             }
             break;
@@ -174,14 +82,18 @@ inline static std::string _radix_digit_to_bits_str(const char digit, short radix
                 case 'x': return "xxxx";
                 case 'z': return "zzzz";
                 default:  
-                    _bad_value(digit, FUNCT, LINE);
+                    _assert_Werr( false, FUNCT, LINE,
+                            "INVALID BIT INPUT: " + std::string(1,digit) 
+                    );
                     break;
             }
             break;
         }
         default:
         {
-            std::cout << "Invalid base " << std::to_string(radix) << " for digit: " << std::string(1,digit) << " @" << FUNCT << "::" << std::to_string(LINE) << std::endl;
+            _assert_Werr( false, FUNCT, LINE,
+                "Invalid base " + std::to_string(radix)
+            );
             break;
         }
     }
@@ -203,7 +115,44 @@ std::string string_of_radix_to_bitstring(std::string orig_string, short radix)
 {
 	
 	std::string result = "";	
-	assert_string_of_radix(orig_string,radix);
+    switch(radix)
+	{
+        // TODO: error ?? throw exception
+        if(orig_string.empty())
+            return "";
+
+		case 2:    
+            assert_Werr(std::string::npos == orig_string.find_first_not_of("xXzZ01"),
+                    "INVALID BIT INPUT: " + orig_string + "for radix 2"
+            );
+            break; 
+
+		case 8:    
+            assert_Werr(std::string::npos == orig_string.find_first_not_of("xXzZ01234567"),
+                    "INVALID BIT INPUT: " + orig_string + "for radix 8"
+            );
+            break; 
+
+		case 10:    
+            assert_Werr(std::string::npos == orig_string.find_first_not_of("0123456789"),
+                    "INVALID BIT INPUT: " + orig_string + "for radix 10"
+            );
+            break; 
+
+		case 16:    
+            assert_Werr(std::string::npos == orig_string.find_first_not_of("xZzZ0123456789aAbBcCdDeEfF"),
+                    "INVALID BIT INPUT: " + orig_string + "for radix 16"
+            );
+            break; 
+
+		default:	    
+            assert_Werr(false, 
+                    "invalid radix: " + std::to_string(radix)
+            );
+            break; 
+;
+	}
+
 	while(!orig_string.empty())
 	{
 		switch(radix)
