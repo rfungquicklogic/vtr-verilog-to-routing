@@ -8,7 +8,16 @@ SRC=
 
 .PHONY: all
 
-C = clang++ -std=c++14 -lpthread -ggdb -O0
+C = clang++ \
+-std=c++14 \
+-lpthread \
+-ggdb \
+-O0 \
+-Werror \
+-Wpedantic \
+-Wall \
+-ferror-limit=1000
+
 
 cleanup_flags=\
 -fno-omit-frame-pointer \
@@ -72,7 +81,7 @@ cleanup_flags=\
 
 #Build everything
 all: 
-	$(C) $(cleanup_flags) -Isrc/include src/*.cpp main.cpp -o rtl_number
+	$(C) -Isrc/include src/*.cpp main.cpp -o rtl_number
 
 clean:
 	rm -Rf ./rtl_number

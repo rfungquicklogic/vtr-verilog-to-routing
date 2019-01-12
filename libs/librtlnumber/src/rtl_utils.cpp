@@ -107,12 +107,12 @@ std::string string_of_radix_to_bitstring(std::string orig_string, short radix)
 {
 	
 	std::string result = "";	
+    // TODO: error ?? throw exception
+    if(orig_string.empty())
+        return "";
+
     switch(radix)
 	{
-        // TODO: error ?? throw exception
-        if(orig_string.empty())
-            return "";
-
 		case 2:    
             assert_Werr(std::string::npos == orig_string.find_first_not_of("xXzZ01"),
                     "INVALID BIT INPUT: " + orig_string + "for radix 2"

@@ -69,9 +69,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "vtr_path.h"
 #include "vtr_memory.h"
 
-#ifdef WITH_LIB_RTL
-#incude "VNumber.hpp"
-#endif /* #ifdef WITH_LIB_RTL */
 
 #define DEFAULT_OUTPUT "temp"
 

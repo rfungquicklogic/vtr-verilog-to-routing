@@ -84,24 +84,18 @@ static EVAL_RESULT eval_op(const VNumber& a_in, const VNumber& b_in)
 	return EQUAL;
 }
 
-static EVAL_RESULT eval_op(veri_internal_bits_t a, VNumber b)
-{
-	VNumber bits_value = VNumber(std::to_string(a));
-	return eval_op(bits_value, b);
-}
-
 static EVAL_RESULT eval_op(VNumber a,veri_internal_bits_t b)
 {
 	VNumber bits_value = VNumber(std::to_string(b));
 	return eval_op(a, bits_value);
 }
 
-bit_value_t bit_eval(EVAL_RESULT evaluate_to, bool invert_evaluation, const VNumber& a, const VNumber& b)
+static bit_value_t bit_eval(EVAL_RESULT evaluate_to, bool invert_evaluation, const VNumber& a, const VNumber& b)
 {
 	EVAL_RESULT evaluate = eval_op(a,b);
 	return 	(evaluate == UNKNOWN) 							?	BitSpace::_x :
-			(invert_evaluation && evaluate != LESS_THAN ) 	?	BitSpace::_1 :
-			(!invert_evaluation && evaluate == LESS_THAN ) 	?	BitSpace::_1 :
+			(invert_evaluation && evaluate != evaluate_to ) ?	BitSpace::_1 :
+			(!invert_evaluation && evaluate == evaluate_to )?	BitSpace::_1 :
 																BitSpace::_0 ;
 }
 
