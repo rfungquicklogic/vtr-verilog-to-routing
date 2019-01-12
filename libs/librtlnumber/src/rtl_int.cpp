@@ -53,8 +53,8 @@ static EVAL_RESULT eval_op(const VNumber& a_in, const VNumber& b_in)
 	}
 	else
 	{
-		a = a_in.get_copy();
-		b = b_in.get_copy();
+		a = a_in;
+		b = b_in;
 	}
 
 	size_t std_length = std::max(a.size(), b.size());
@@ -126,7 +126,7 @@ static bit_value_t reduce_op(const VNumber& a, const bit_value_t lut[4][4])
 /**
  * Binary Reduction operations
  */
-static VNumber& redux_op(const VNumber& a, const VNumber& b, const bit_value_t lut[4][4])
+static const VNumber redux_op(const VNumber& a, const VNumber& b, const bit_value_t lut[4][4])
 {
 	assert_Werr( a.size() ,
 		"empty 1st bit string" 
@@ -161,7 +161,7 @@ static VNumber& redux_op(const VNumber& a, const VNumber& b, const bit_value_t l
 /**
  * Addition operations
  */
-static VNumber& sum_op(const VNumber& a, const VNumber& b, const bit_value_t& initial_carry)
+static const VNumber sum_op(const VNumber& a, const VNumber& b, const bit_value_t& initial_carry)
 {
 	assert_Werr( a.size() ,
 		"empty 1st bit string" 
@@ -196,7 +196,7 @@ static VNumber& sum_op(const VNumber& a, const VNumber& b, const bit_value_t& in
 	return result;
 }
 
-static VNumber& shift_op(const VNumber& a, int64_t b, bool sign_shift)
+static const VNumber shift_op(const VNumber& a, int64_t b, bool sign_shift)
 {
 	VNumber to_return;
 	if(b < static_cast<int64_t>(a.size()))
@@ -205,7 +205,7 @@ static VNumber& shift_op(const VNumber& a, int64_t b, bool sign_shift)
 	//if b is negative than shift right
 	if(b==0)
 	{
-		to_return = a.get_copy();
+		to_return = a;
 	}
 	else if(b < 0)
 	{
@@ -228,7 +228,7 @@ static VNumber& shift_op(const VNumber& a, int64_t b, bool sign_shift)
 	return to_return;
 }
 
-bool V_TRUE(VNumber a)
+bool V_TRUE(const VNumber& a)
 {
 	return	( reduce_op(a,l_or) == BitSpace::_1 );
 }
@@ -240,7 +240,7 @@ bool V_TRUE(VNumber a)
  *                                                                        
  */
 
-VNumber& V_BITWISE_NOT(const VNumber& a)
+const VNumber V_BITWISE_NOT(const VNumber& a)
 {
 	assert_Werr( a.size() ,
 		"empty bit string" 
@@ -252,54 +252,54 @@ VNumber& V_BITWISE_NOT(const VNumber& a)
 	return to_return;
 }
 
-VNumber& V_LOGICAL_NOT(const VNumber& a)
+const VNumber V_LOGICAL_NOT(const VNumber& a)
 {
 	VNumber to_return(1, l_not[reduce_op(a,l_or)], false);
 	return to_return;
 }
 
-VNumber& V_ADD(const VNumber& a)
+const VNumber V_ADD(const VNumber& a)
 {
 	VNumber result(a);
 	return result;
 }
 
-VNumber& V_MINUS(const VNumber& a)
+const VNumber V_MINUS(const VNumber& a)
 {
 	return a.twos_complement();
 }
 
-VNumber& V_BITWISE_AND(const VNumber& a)
+const VNumber V_BITWISE_AND(const VNumber& a)
 {
 	VNumber to_return(1, reduce_op(a, l_and), false);
 	return to_return;
 }
 
-VNumber& V_BITWISE_OR(const VNumber& a)
+const VNumber V_BITWISE_OR(const VNumber& a)
 {
 	VNumber to_return(1, reduce_op(a, l_or), false);
 	return to_return;
 }
 
-VNumber& V_BITWISE_XOR(const VNumber& a)
+const VNumber V_BITWISE_XOR(const VNumber& a)
 {
 	VNumber to_return(1, reduce_op(a, l_xor), false);
 	return to_return;
 }
 
-VNumber& V_BITWISE_NAND(const VNumber& a)
+const VNumber V_BITWISE_NAND(const VNumber& a)
 {
 	VNumber to_return(1, reduce_op(a, l_nand), false);
 	return to_return;
 }
 
-VNumber& V_BITWISE_NOR(const VNumber& a)
+const VNumber V_BITWISE_NOR(const VNumber& a)
 {
 	VNumber to_return(1, reduce_op(a, l_nor), false);
 	return to_return;
 }
 
-VNumber& V_BITWISE_XNOR(const VNumber& a)
+const VNumber V_BITWISE_XNOR(const VNumber& a)
 {
 	VNumber to_return(1, reduce_op(a, l_xnor), false);
 	return to_return;
@@ -312,32 +312,32 @@ VNumber& V_BITWISE_XNOR(const VNumber& a)
  *                                                                          
  */
 
-VNumber& V_BITWISE_AND(const VNumber& a, const VNumber& b)
+const VNumber V_BITWISE_AND(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a,b,l_and);
 }
 
-VNumber& V_BITWISE_OR(const VNumber& a, const VNumber& b)
+const VNumber V_BITWISE_OR(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a,b,l_or);
 }
 
-VNumber& V_BITWISE_XOR(const VNumber& a, const VNumber& b)
+const VNumber V_BITWISE_XOR(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a,b,l_xor);
 }
 
-VNumber& V_BITWISE_NAND(const VNumber& a, const VNumber& b)
+const VNumber V_BITWISE_NAND(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a,b,l_nand);
 }
 
-VNumber& V_BITWISE_NOR(const VNumber& a, const VNumber& b)
+const VNumber V_BITWISE_NOR(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a,b,l_nor);
 }
 
-VNumber& V_BITWISE_XNOR(const VNumber& a, const VNumber& b)
+const VNumber V_BITWISE_XNOR(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a,b,l_xnor);
 }
@@ -346,17 +346,17 @@ VNumber& V_BITWISE_XNOR(const VNumber& a, const VNumber& b)
  * Logical Operations
  */
 
-VNumber& V_CASE_EQUAL(const VNumber& a, const VNumber& b)
+const VNumber V_CASE_EQUAL(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a, b, l_case_eq);
 }
 
-VNumber& V_CASE_NOT_EQUAL(const VNumber& a, const VNumber& b)
+const VNumber V_CASE_NOT_EQUAL(const VNumber& a, const VNumber& b)
 {
 	return redux_op(a, b, l_case_neq);
 }
 
-VNumber& V_LOGICAL_AND(const VNumber& a, const VNumber& b)
+const VNumber V_LOGICAL_AND(const VNumber& a, const VNumber& b)
 {
 	bit_value_t bit_a = reduce_op(a, l_or);
 	bit_value_t bit_b = reduce_op(b, l_or);
@@ -366,7 +366,7 @@ VNumber& V_LOGICAL_AND(const VNumber& a, const VNumber& b)
 	return to_return;
 }
 
-VNumber& V_LOGICAL_OR(const VNumber& a, const VNumber& b)
+const VNumber V_LOGICAL_OR(const VNumber& a, const VNumber& b)
 {
 	bit_value_t bit_a = reduce_op(a, l_or);
 	bit_value_t bit_b = reduce_op(b, l_or);
@@ -376,43 +376,43 @@ VNumber& V_LOGICAL_OR(const VNumber& a, const VNumber& b)
 	return to_return;
 }
 
-VNumber& V_LT(const VNumber& a, const VNumber& b)
+const VNumber V_LT(const VNumber& a, const VNumber& b)
 {
 	VNumber to_return(1, bit_eval(LESS_THAN, false, a, b), false);
 	return to_return;
 }
 
-VNumber& V_GT(const VNumber& a, const VNumber& b)
+const VNumber V_GT(const VNumber& a, const VNumber& b)
 {
 	VNumber to_return(1, bit_eval(GREATHER_THAN, false, a, b), false);
 	return to_return;
 }
 
-VNumber& V_EQUAL(const VNumber& a, const VNumber& b)
+const VNumber V_EQUAL(const VNumber& a, const VNumber& b)
 {
 	VNumber to_return(1, bit_eval(EQUAL, false, a, b), false);
 	return to_return;
 }
 
-VNumber& V_GE(const VNumber& a, const VNumber& b)
+const VNumber V_GE(const VNumber& a, const VNumber& b)
 {
 	VNumber to_return(1, bit_eval(LESS_THAN, true, a, b), false);
 	return to_return;
 }
 
-VNumber& V_LE(const VNumber& a, const VNumber& b)
+const VNumber V_LE(const VNumber& a, const VNumber& b)
 {
 	VNumber to_return(1, bit_eval(GREATHER_THAN, true, a, b), false);
 	return to_return;
 }
 
-VNumber& V_NOT_EQUAL(const VNumber& a, const VNumber& b)
+const VNumber V_NOT_EQUAL(const VNumber& a, const VNumber& b)
 {
 	VNumber to_return(1, bit_eval(EQUAL, true, a, b), false);
 	return to_return;
 }
 
-VNumber& V_SIGNED_SHIFT_LEFT(const VNumber& a, const VNumber& b)
+const VNumber V_SIGNED_SHIFT_LEFT(const VNumber& a, const VNumber& b)
 {
 	if(b.is_dont_care_string())	
 		return VNumber("x");
@@ -420,7 +420,7 @@ VNumber& V_SIGNED_SHIFT_LEFT(const VNumber& a, const VNumber& b)
 	return shift_op(a, b.get_value(), true);
 }
 
-VNumber& V_SHIFT_LEFT(const VNumber& a, const VNumber& b)
+const VNumber V_SHIFT_LEFT(const VNumber& a, const VNumber& b)
 {
 	if(b.is_dont_care_string())	
 		return VNumber("x");
@@ -428,7 +428,7 @@ VNumber& V_SHIFT_LEFT(const VNumber& a, const VNumber& b)
 	return shift_op(a, b.get_value(), false);
 }
 
-VNumber& V_SIGNED_SHIFT_RIGHT(const VNumber& a, const VNumber& b)
+const VNumber V_SIGNED_SHIFT_RIGHT(const VNumber& a, const VNumber& b)
 {
 	if(b.is_dont_care_string())	
 		return VNumber("x");
@@ -436,7 +436,7 @@ VNumber& V_SIGNED_SHIFT_RIGHT(const VNumber& a, const VNumber& b)
 	return shift_op(a, -1* b.get_value(), true);
 }
 
-VNumber& V_SHIFT_RIGHT(const VNumber& a, const VNumber& b)
+const VNumber V_SHIFT_RIGHT(const VNumber& a, const VNumber& b)
 {
 	if(b.is_dont_care_string())	
 		return VNumber("x");
@@ -444,18 +444,18 @@ VNumber& V_SHIFT_RIGHT(const VNumber& a, const VNumber& b)
 	return shift_op(a, -1* b.get_value(), false);
 }
 
-VNumber& V_ADD(const VNumber& a, const VNumber& b)
+const VNumber V_ADD(const VNumber& a, const VNumber& b)
 {
 	return sum_op(a, b, _0);
 }
 
-VNumber& V_MINUS(const VNumber& a, const VNumber& b)
+const VNumber V_MINUS(const VNumber& a, const VNumber& b)
 {
 	VNumber complement = V_MINUS(b);
 	return sum_op(a, complement, _1);
 }
 
-VNumber& V_MULTIPLY(const VNumber& a_in, const VNumber& b_in)
+const VNumber V_MULTIPLY(const VNumber& a_in, const VNumber& b_in)
 {
 	if(a_in.is_dont_care_string() || b_in.is_dont_care_string())
 		return VNumber("x");
@@ -496,7 +496,7 @@ VNumber& V_MULTIPLY(const VNumber& a_in, const VNumber& b_in)
 	return result;
 }
 
-VNumber& V_POWER(const VNumber& a, const VNumber& b)
+const VNumber V_POWER(const VNumber& a, const VNumber& b)
 {
 	if(a.is_dont_care_string() || b.is_dont_care_string())
 		return VNumber("xxxx");
@@ -549,7 +549,7 @@ VNumber& V_POWER(const VNumber& a, const VNumber& b)
 
 //TODO this won't work
 /////////////////////////////
-VNumber& V_DIV(const VNumber& a_in, const VNumber& b)
+const VNumber V_DIV(const VNumber& a_in, const VNumber& b)
 {
 	if(a_in.is_dont_care_string() || b.is_dont_care_string() || eval_op(b,0) == EQUAL)
 		return VNumber("x");
@@ -575,7 +575,7 @@ VNumber& V_DIV(const VNumber& a_in, const VNumber& b)
 	return result;
 }
 
-VNumber& V_MOD(const VNumber& a_in, const VNumber& b)
+const VNumber V_MOD(const VNumber& a_in, const VNumber& b)
 {
 	if(a_in.is_dont_care_string() || b.is_dont_care_string() || eval_op(b, 0) == EQUAL)
 		return VNumber("x");
@@ -600,7 +600,7 @@ VNumber& V_MOD(const VNumber& a_in, const VNumber& b)
  *     |  |___ |  \ | \| /~~\ |  \  |     \__/ |    |___ |  \ /~~\  |  | \__/ | \| 
  *                                                                                 
 */
-VNumber& V_TERNARY(const VNumber& a_in, const VNumber& b_in, const VNumber& c_in)
+const VNumber V_TERNARY(const VNumber& a_in, const VNumber& b_in, const VNumber& c_in)
 {
 	/*	if a evaluates properly	*/
 	EVAL_RESULT eval = eval_op(V_LOGICAL_NOT(a_in),0);

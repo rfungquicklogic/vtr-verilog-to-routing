@@ -8,10 +8,10 @@ SRC=
 
 .PHONY: all
 
-C = clang++ -std=c++14 -lpthread -ggdb
+C = clang++ -std=c++14 -lpthread -ggdb -O0
 
 cleanup_flags=\
--fsanitize=thread \
+-fno-omit-frame-pointer \
 -ferror-limit=1000 \
 -Werror \
 -Wpedantic \

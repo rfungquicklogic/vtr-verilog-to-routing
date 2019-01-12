@@ -9,14 +9,6 @@
 #include <algorithm>
 #include <iostream>
 
-inline void __assert_Werr(bool cond, const char *FUNCT, int LINE, std::string error_string)
-{
-    if (!cond) { 
-        std::cout << "ERROR:" << FUNCT << "::" << std::to_string(LINE) << "\t" << error_string << std::endl;
-        std::abort();
-    }
-}
-
 inline static std::string _radix_digit_to_bits_str(const char digit, short radix,  const char *FUNCT, int LINE)
 {
     switch(radix)
