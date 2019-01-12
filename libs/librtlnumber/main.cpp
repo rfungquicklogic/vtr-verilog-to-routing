@@ -10,7 +10,6 @@
 #include <string>
 #include <algorithm>
 
-#include "VNumber.hpp"
 #include "rtl_int.hpp"
 #include "rtl_utils.hpp"
 

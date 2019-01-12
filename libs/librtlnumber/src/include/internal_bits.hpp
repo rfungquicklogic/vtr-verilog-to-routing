@@ -291,7 +291,7 @@ namespace BitSpace {
 
         size_t size() const
         {
-            return GET_VERI_BITWIDTH(bits)
+            return GET_VERI_BITWIDTH(bits);
         }
 
         bool has_unknowns()
@@ -300,20 +300,6 @@ namespace BitSpace {
             //that if any even bit are set (lsb is 1) then we have an unknown
             //masking it with 10101010 does just that.. 1010 = 0x5
             return static_cast<bool>(this->bits & 0x5555555555555555);
-        }
-
-        std::string to_string(bool big_endian) const
-        {
-            int start =      (big_endian)? 0x0: this->size()-1;
-            int end =        (big_endian)? this->size()-1: 0x0;
-            int increment =  (big_endian)? 1: -1;
-
-            std::string to_return = "";
-            for(int address=start; (big_endian)? (address <= static_cast<int>(end)): (address >= static_cast<int>(end)); address += increment)
-            {
-                to_return.push_back(BitSpace::to_char(this->bits[to_index(address)].get_bit(address)));
-            }
-            return to_return;
         }
     };
 
@@ -329,7 +315,7 @@ namespace BitSpace {
         BitFields<veri_internal_bits_t> *bits;
         uint16_t bit_size;
 
-        inline int16_t to_index(int16_t address) const
+        inline size_t to_index(size_t address) const
         {
             return (address >> 2);
         }
@@ -345,6 +331,17 @@ namespace BitSpace {
         {
         }
 
+        VerilogBits(const VerilogBits& other)
+        {
+            this->bit_size = other.size();
+            this->bits = new BitFields<veri_internal_bits_t>[this->list_size()];
+
+            for(size_t i=0; i< this->list_size(); i++)
+            {
+                bits[i] = other.get_packet(i);
+            }
+        }
+
         VerilogBits(size_t data_size, bit_value_t value_in)
         {
             
@@ -354,8 +351,8 @@ namespace BitSpace {
         void init_bits(size_t data_size, bit_value_t value_in)
         {
             this->bit_size = static_cast<uint16_t>(data_size);
-            this->bits = new BitFields<veri_internal_bits_t>[to_index(this->bit_size)];
-            for(size_t i=0; i < to_index(this->bit_size); i++)
+            this->bits = new BitFields<veri_internal_bits_t>[this->list_size()];
+            for(size_t i=0; i < this->list_size(); i++)
             {
                 bits[i].init_values(value_in);
             }
@@ -365,6 +362,15 @@ namespace BitSpace {
         {
             return bit_size;
         }
+
+        inline BitFields<veri_internal_bits_t> get_packet(size_t index) const
+        {
+    #ifdef DEBUG_V_BITS
+            assert_Werr(index < this->list_size(),
+                "Bit list index out of bounds");
+    #endif
+            return (this->bits[index]);
+        }        
 
         inline bit_value_t get_bit(size_t address) const
         {
@@ -386,14 +392,18 @@ namespace BitSpace {
 
         std::string to_string(bool big_endian) const
         {
-            int start =      (big_endian)? 0x0: this->size()-1;
-            int end =        (big_endian)? this->size()-1: 0x0;
+            int start =      (big_endian)? 0x0: static_cast<int>(this->size()-1);
+            int end =        (big_endian)? static_cast<int>(this->size()-1): 0x0;
             int increment =  (big_endian)? 1: -1;
 
             std::string to_return = "";
-            for(int address=start; (big_endian)? (address <= static_cast<int>(end)): (address >= static_cast<int>(end)); address += increment)
+            for(
+                int address=start; 
+                (big_endian)? (address <= static_cast<int>(end)): (address >= static_cast<int>(end)); 
+                address += increment)
             {
-                to_return.push_back(BitSpace::to_char(this->bits[to_index(address)].get_bit(address)));
+                size_t uaddress = static_cast<size_t>(address);
+                to_return.push_back(BitSpace::to_char(this->bits[to_index(uaddress)].get_bit(uaddress)));
             }
             return to_return;
         }
@@ -420,20 +430,27 @@ public:
 
     VNumber(){}
 
+    // Copy constructor 
+    VNumber(const VNumber& other) 
+    {
+        this->sign = other.is_signed();
+
+    } 
+
     VNumber(std::string verilog_string)
     {
         set_value(verilog_string);
     }
 
-    VNumber(long long numeric_value)
+    VNumber(int64_t numeric_value)
     {
         set_value(numeric_value);
     }
 
     VNumber(size_t len, BitSpace::bit_value_t init_bits, bool input_sign)
     {
-        this->bitstring.init_bits(len, BitSpace::_0);
-        this->sign = sign;
+        this->bitstring.init_bits(len, init_bits);
+        this->sign = input_sign;
     }
     
     /***
@@ -447,7 +464,7 @@ public:
 
         // We need to accomodate for signed values
         assert_Werr( (this->bitstring.size() < GET_VERI_BITWIDTH(veri_internal_bits_t)),
-                    "Invalid Number. Too large to be converted. number size: " + this->bitstring.size()
+                    "Invalid Number. Too large to be converted. number size: " + std::to_string(this->bitstring.size())
         );      
 
         int64_t result = 0;
@@ -491,18 +508,25 @@ public:
 
         size_t bitsize = 0;
         if(loc != 0)
-            bitsize = strtoul(verilog_string.substr(0,loc).c_str(), NULL, 10);
+            bitsize = strtoul(verilog_string.substr(0,loc).c_str(), nullptr, 10);
 
         this->sign = false;
         if(std::tolower(verilog_string[loc+1]) == 's')
             this->sign = true;
 
-        char base = std::tolower(verilog_string[loc+1+sign]);
-        size_t radix = (base == 'b') ? 2   :
-                        (base == 'o') ? 8   :
-                        (base == 'd') ? 10  :
-                        (base == 'h') ? 16  :
-                                        -1  ;
+        char base = static_cast<char>(std::tolower(verilog_string[loc+1+sign]));
+        uint8_t radix = 0;
+        switch(base){
+            case 'b':   radix = 2;  break;
+            case 'o':   radix = 8;  break;
+            case 'd':   radix = 10; break;
+            case 'h':   radix = 16; break;
+            default:    
+                assert_Werr( false,
+                        "Invalid radix base for number: " + std::string(1,base)
+                ); 
+                break;
+        }
 
         //remove underscores
         std::string v_value_str = verilog_string.substr(loc+2+sign);
@@ -540,7 +564,7 @@ public:
             this->bitstring.set_bit(--counter,BitSpace::from_char(in));
     }
 
-    void set_value(long long in)
+    void set_value(int64_t in)
     {
         this->set_value(std::to_string(in));
     }
@@ -578,7 +602,7 @@ public:
 
     bool is_signed() const
     {
-        return this->is_signed;
+        return this->sign;
     }
 
     bool is_negative() const
@@ -601,7 +625,7 @@ public:
         VNumber to_return(this->size(), BitSpace::_0, this->is_signed());
         BitSpace::bit_value_t previous_carry = BitSpace::_1;
 
-        for(int i=0; i<this->size(); i++)
+        for(size_t i=0; i<this->size(); i++)
         {
             BitSpace::bit_value_t bit_a = BitSpace::l_not[this->get_bit_from_lsb(i)];
             to_return.set_bit_from_lsb(i, BitSpace::l_xor[previous_carry][bit_a]);
@@ -610,10 +634,10 @@ public:
         return to_return;
     }
 
-    VNumber& copy() const
+    VNumber& get_copy() const
     {
         VNumber to_return(this->size(), BitSpace::_0, this->is_signed());
-        for(int i=0; i<this->size(); i++)
+        for(size_t i=0; i<this->size(); i++)
             to_return.set_bit_from_lsb(i, this->get_bit_from_lsb(i));
         
         return to_return;
