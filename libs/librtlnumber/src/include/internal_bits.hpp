@@ -408,7 +408,7 @@ public:
     VNumber(){}
 
     // Copy constructor 
-    VNumber(VNumber& other) 
+    VNumber(const VNumber& other) 
     {
         this->sign = other.is_signed();
 
@@ -585,7 +585,7 @@ public:
         return this->bitstring.size();
     }
 
-    bool is_signed()
+    bool is_signed() const
     {
         return this->sign;
     }
@@ -605,7 +605,7 @@ public:
         return this->bitstring.has_unknowns();
     }
 
-    const VNumber twos_complement()
+    VNumber twos_complement()
     {
         VNumber to_return(this->size(), BitSpace::_0, this->is_signed());
         BitSpace::bit_value_t previous_carry = BitSpace::_1;
