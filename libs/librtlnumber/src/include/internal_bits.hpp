@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <bitset>
 #include "rtl_utils.hpp"
 
 typedef uint64_t veri_internal_bits_t;
@@ -13,11 +14,17 @@ namespace BitSpace {
     typedef uint8_t bit_value_t;
 
     #define GET_VERI_BITWIDTH(type_in)  (sizeof(type_in)<<2) // the bitwidth /2 since we need 2 bits per veri bit
+    #define GET_REAL_BITWIDTH(type_in)  (sizeof(type_in)<<3) 
 
-    const bit_value_t _0 = 0x0;
-    const bit_value_t _1 = 0x1;
-    const bit_value_t _x = 0x2;
-    const bit_value_t _z = 0x3;
+    static constexpr veri_internal_bits_t _All_0 = static_cast<veri_internal_bits_t>(0x0000000000000000UL);
+    static constexpr veri_internal_bits_t _All_1 = static_cast<veri_internal_bits_t>(0x5555555555555555UL);
+    static constexpr veri_internal_bits_t _All_x = static_cast<veri_internal_bits_t>(0xAAAAAAAAAAAAAAAAUL);
+    static constexpr veri_internal_bits_t _All_z = static_cast<veri_internal_bits_t>(0xFFFFFFFFFFFFFFFFUL);
+
+    static constexpr bit_value_t _0 = 0x0;
+    static constexpr bit_value_t _1 = 0x1;
+    static constexpr bit_value_t _x = 0x2;
+    static constexpr bit_value_t _z = 0x3;
 
     /***                                                              
      * these are taken from the raw verilog truth tables so that the evaluation are correct.
@@ -26,12 +33,12 @@ namespace BitSpace {
      * 
      *******************************************************/
 
-    static const bit_value_t l_buf[4] = {
+    static constexpr bit_value_t l_buf[4] = {
         /*	 0   1   x   z  <- a*/
             _0,_1,_x,_x
     };
 
-    static const bit_value_t l_not[4] = {
+    static constexpr bit_value_t l_not[4] = {
         /*   0   1   x   z 	<- a */
             _1,_0,_x,_x
     };
@@ -42,34 +49,34 @@ namespace BitSpace {
     #define unroll_1d_invert(lut) { l_not[lut[_0]], l_not[lut[_1]], l_not[lut[_x]], l_not[lut[_z]] }
     #define unroll_2d_invert(lut) { unroll_1d_invert(lut[_0]), unroll_1d_invert(lut[_1]), unroll_1d_invert(lut[_x]), unroll_1d_invert(lut[_z]) }
 
-    static const bit_value_t l_and[4][4] = {
+    static constexpr bit_value_t l_and[4][4] = {
         /* a  /	 0   1   x   z 	<-b */	
         /* 0 */	{_0,_0,_0,_0},	
         /* 1 */	{_0,_1,_x,_x},	
         /* x */	{_0,_x,_x,_x},	
         /* z */	{_0,_x,_x,_x}
     };
-    static const bit_value_t l_nand[4][4] = 
+    static constexpr bit_value_t l_nand[4][4] = 
         unroll_2d_invert(l_and);
 
-    static const bit_value_t l_or[4][4] = {
+    static constexpr bit_value_t l_or[4][4] = {
         /* a  /	 0   1   x   z 	<-b */	
         /* 0 */	{_0,_1,_x,_x},	
         /* 1 */	{_1,_1,_1,_1},	
         /* x */	{_x,_1,_x,_x},	
         /* z */	{_x,_1,_x,_x}
     };
-    static const bit_value_t l_nor[4][4] = 
+    static constexpr bit_value_t l_nor[4][4] = 
         unroll_2d_invert(l_or);
 
-    static const bit_value_t l_xor[4][4] = {
+    static constexpr bit_value_t l_xor[4][4] = {
         /* a  /	 0   1   x   z 	<-b */	
         /* 0 */	{_0,_1,_x,_x},	
         /* 1 */	{_1,_0,_x,_x},	
         /* x */	{_x,_x,_x,_x},	
         /* z */	{_x,_x,_x,_x}
     };
-    static const bit_value_t l_xnor[4][4] = 
+    static constexpr bit_value_t l_xnor[4][4] = 
         unroll_2d_invert(l_xor);
 
 
@@ -205,70 +212,78 @@ namespace BitSpace {
         /* z */ unroll_2d(l_ternary)
     };
 
+    static char bit_to_c(bit_value_t bit)
+    {
+        switch(bit)
+        {
+            case _0:    return '0';
+            case _1:    return '1';
+            case _x:    return 'x';
+            default:    return 'z';
+        }
+    }
+
     template<typename T>
     class BitFields
     {
     private :
 
+        /**
+         * set to x by default
+         */
         T bits;
 
-        size_t get_bit_location(size_t address) const
+        size_t get_bit_location(size_t address)
         {
-            size_t real_address = ((address%this->size())<<1);
-            return real_address;
-        }
-
-    public :
-
-        void init_values(bit_value_t init)
-        {
-            for(size_t i=0; i < this->size() ; i++)
-            {
-                this->bits |= init;
-                init <<= 2;
-            }
+            return ((address%this->size())<<1);
         }
 
         BitFields()
         {
-            this->init_values(_x);
         }
+
+    public :
 
         BitFields(bit_value_t initial_value)
         {
-            this->init_values(initial_value);
+            switch(initial_value)
+            {
+                case _0:    this->bits = _All_0; break;
+                case _1:    this->bits = _All_1; break;
+                case _z:    this->bits = _All_z; break;
+                default:    this->bits = _All_x; break;
+            }
         }        
         
-        bit_value_t get_bit(size_t address) const
+        bit_value_t get_bit(size_t address)
         {
-            size_t real_address = this->get_bit_location(address);
-            return (this->bits >> real_address) & 0x3;
+            return (this->bits >> (this->get_bit_location(address))) & 0x3UL;
         }
 
         void set_bit(size_t address, bit_value_t value)
         {	
             size_t real_address = this->get_bit_location(address);
 
-            T long_value = value;
+            T long_value = static_cast<T>(value);
 
             T set_value = long_value << real_address;
-            T zero_out_location = ~(0x3 << real_address);
+            T zero_out_location = ~(0x3UL << real_address);
 
             this->bits &= zero_out_location;
             this->bits |= set_value;
         }
 
-        size_t size() const
+        static size_t size()
         {
             return GET_VERI_BITWIDTH(bits);
         }
 
-        bool has_unknowns() const
+        bool has_unknowns()
         {
-            //this speeds up the check quite a bit since we can do lookup by packet of 4 (2 bit per value) knowing
+            //this speeds up the check quite a bit since we can do lookup by packet of size of this template (2 bit per value) knowing
             //that if any even bit are set (lsb is 1) then we have an unknown
-            //masking it with 10101010 does just that.. 1010 = 0x5
-            return static_cast<bool>(this->bits & 0x5555555555555555);
+            //masking it with 10101010 does just that.. 1010 = 0xA
+            return static_cast<bool>(this->bits & _All_x);
         }
     };
 
@@ -282,14 +297,14 @@ namespace BitSpace {
     private:
 
         std::vector<BitFields<veri_internal_bits_t>> bits;
-        uint16_t bit_size;
+        size_t bit_size;
 
-        inline size_t to_index(size_t address) const
+        inline size_t to_index(size_t address)
         {
-            return (address >> 2);
+            return (address / BitFields<veri_internal_bits_t>::size() );
         }
 
-        inline size_t list_size() const
+        inline size_t list_size()
         {
             return (this->bit_size / ( GET_VERI_BITWIDTH(veri_internal_bits_t) ));
         }
@@ -300,7 +315,7 @@ namespace BitSpace {
         {
         }
 
-        VerilogBits(const VerilogBits& other)
+        VerilogBits(VerilogBits& other)
         {
             this->bit_size = other.size();
             for(size_t i=0; i< this->list_size(); i++)
@@ -320,12 +335,12 @@ namespace BitSpace {
                 bits.push_back( BitFields<veri_internal_bits_t>(value_in) );
         }
 
-        size_t size() const
+        size_t size()
         {
             return bit_size;
         }
 
-        inline BitFields<veri_internal_bits_t> get_packet(size_t index) const
+        inline BitFields<veri_internal_bits_t> get_packet(size_t index)
         {
     #ifdef DEBUG_V_BITS
             assert_Werr(index < this->list_size(),
@@ -334,7 +349,7 @@ namespace BitSpace {
             return (this->bits[index]);
         }        
 
-        inline bit_value_t get_bit(size_t address) const
+        inline bit_value_t get_bit(size_t address)
         {
     #ifdef DEBUG_V_BITS
             assert_Werr(address < this->bit_size,
@@ -352,7 +367,7 @@ namespace BitSpace {
             (this->bits[to_index(address)].set_bit(address, value));
         }
 
-        std::string to_string(bool big_endian) const
+        std::string to_string(bool big_endian)
         {
             int start =      (big_endian)? 0x0: static_cast<int>(this->size()-1);
             int end =        (big_endian)? static_cast<int>(this->size()-1): 0x0;
@@ -365,20 +380,12 @@ namespace BitSpace {
                 address += increment)
             {
                 size_t uaddress = static_cast<size_t>(address);
-                char out = 'x';
-                switch(this->bits[to_index(uaddress)].get_bit(uaddress))
-                {
-                    case _0:    out = '0'; break;
-                    case _1:    out = '1'; break;
-                    case _x:    out = 'x'; break;
-                    default:    out = 'z'; break;
-                }
-                to_return.push_back(out);
+                to_return.push_back(BitSpace::bit_to_c(this->bits[to_index(uaddress)].get_bit(uaddress)));
             }
             return to_return;
         }
 
-        bool has_unknowns() const
+        bool has_unknowns()
         {
             bool has_it = false;
             for(size_t i =0 ; i < this->list_size() && !has_it; i++)
@@ -401,7 +408,7 @@ public:
     VNumber(){}
 
     // Copy constructor 
-    VNumber(const VNumber& other) 
+    VNumber(VNumber& other) 
     {
         this->sign = other.is_signed();
 
@@ -426,7 +433,7 @@ public:
     /***
      * getters
      */
-    int64_t get_value() const
+    int64_t get_value()
     {
         assert_Werr( (! this->bitstring.has_unknowns() ) ,
                     "Invalid Number contains dont care values. number: " + this->bitstring.to_string(false)
@@ -452,7 +459,7 @@ public:
     }
 
     // convert lsb_msb bitstring to verilog
-    std::string to_string() const
+    std::string to_string()
     {
         std::string out = this->bitstring.to_string(false);
         size_t len = this->bitstring.size();
@@ -515,7 +522,7 @@ public:
             }
             else if(bitsize > temp_bitstring.length())
             {
-                temp_bitstring.insert(temp_bitstring.begin(),this->get_padding_bit());
+                temp_bitstring.insert(temp_bitstring.begin(),BitSpace::bit_to_c(this->get_padding_bit()));
             }
             else if(bitsize < temp_bitstring.length())
             {
@@ -550,12 +557,12 @@ public:
     /****
      * bit twiddling functions
      */
-    BitSpace::bit_value_t get_bit_from_msb(size_t index) const
+    BitSpace::bit_value_t get_bit_from_msb(size_t index)
     {
         return this->bitstring.get_bit(this->bitstring.size()-index);
     }
 
-    BitSpace::bit_value_t get_bit_from_lsb(size_t index) const
+    BitSpace::bit_value_t get_bit_from_lsb(size_t index)
     {
         return this->bitstring.get_bit(this->bitstring.size()-index);
     }
@@ -573,32 +580,32 @@ public:
     /***
      *  other
      */
-    size_t size() const
+    size_t size()
     {
         return this->bitstring.size();
     }
 
-    bool is_signed() const
+    bool is_signed()
     {
         return this->sign;
     }
 
-    bool is_negative() const
+    bool is_negative()
     {
         return ( this->get_bit_from_msb(0) == BitSpace::_1 && this->sign );
     }
 
-    BitSpace::bit_value_t get_padding_bit() const
+    BitSpace::bit_value_t get_padding_bit()
     {
         return this->is_negative()? BitSpace::_1:BitSpace::_0;
     }
 
-    bool is_dont_care_string() const
+    bool is_dont_care_string()
     {
         return this->bitstring.has_unknowns();
     }
 
-    const VNumber twos_complement() const
+    const VNumber twos_complement()
     {
         VNumber to_return(this->size(), BitSpace::_0, this->is_signed());
         BitSpace::bit_value_t previous_carry = BitSpace::_1;
