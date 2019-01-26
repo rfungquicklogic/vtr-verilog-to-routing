@@ -37,6 +37,8 @@ cleanup_flags=\
 -Weverything \
 -Wall \
 -ggdb -O0 -g \
+-Wno-c++98-compat \
+-Wno-padded \
 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls
 
 PHONY: error

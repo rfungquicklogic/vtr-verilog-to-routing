@@ -155,9 +155,9 @@ std::string string_of_radix_to_bitstring(std::string orig_string, short radix)
 				char rem_digit = '0';
 				for(char& current_digit : orig_string)
 				{
-					short new_pair = ((rem_digit - '0')*10) + (current_digit-'0');
-					new_number.push_back((new_pair/2) + '0');
-                    rem_digit =         ((new_pair%2) + '0');
+					uint8_t new_pair = (static_cast<uint8_t>(rem_digit - '0')*10) + static_cast<uint8_t>(current_digit-'0');
+					new_number.push_back(static_cast<char>((new_pair/2) + '0'));
+                    rem_digit =         (static_cast<char>((new_pair%2) + '0'));
 				}
 
                 result.push_back(rem_digit);

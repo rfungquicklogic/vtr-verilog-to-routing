@@ -84,9 +84,12 @@ static EVAL_RESULT eval_op(VNumber& a_in, VNumber& b_in)
 	return EQUAL;
 }
 
-static EVAL_RESULT eval_op(VNumber a,veri_internal_bits_t b)
+static EVAL_RESULT eval_op(VNumber a,int64_t b)
 {
-	VNumber bits_value = VNumber(std::to_string(b));
+	VNumber bits_value =  VNumber(std::to_string(std::abs(b)));
+	if(b < 0)
+		bits_value = bits_value.twos_complement();
+
 	return eval_op(a, bits_value);
 }
 
@@ -203,20 +206,22 @@ static VNumber shift_op(VNumber& a, int64_t b, bool sign_shift)
 	}
 	else if(b < 0)
 	{
+		size_t u_b = static_cast<size_t>(-b);
 		bit_value_t pad = ( sign_shift ) ? a.get_padding_bit(): BitSpace::_0;
 		to_return = VNumber(a.size(), pad, sign_shift);
-		for(size_t i=0; i < (a.size() + b); i++)
+		for(size_t i=0; i < (a.size() + u_b); i++)
 		{
-			to_return.set_bit_from_lsb(i, a.get_bit_from_lsb(i-b));
+			to_return.set_bit_from_lsb(i, a.get_bit_from_lsb(i-u_b));
 		}
 	}
 	else
 	{
+		size_t u_b = static_cast<size_t>(b);
 		bit_value_t pad = BitSpace::_0;
-		to_return =VNumber((a.size() + b), pad, sign_shift);
+		to_return =VNumber((a.size() + u_b), pad, sign_shift);
 		for(size_t i=0; i < a.size(); i++)
 		{
-			to_return.set_bit_from_lsb(i+b, a.get_bit_from_lsb(i));
+			to_return.set_bit_from_lsb(i+u_b, a.get_bit_from_lsb(i));
 		}
 	}
 	return to_return;

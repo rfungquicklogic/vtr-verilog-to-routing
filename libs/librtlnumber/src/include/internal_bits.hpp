@@ -13,15 +13,15 @@ typedef uint64_t veri_internal_bits_t;
 namespace BitSpace {
     typedef uint8_t bit_value_t;
 
-    static constexpr veri_internal_bits_t _All_0 = static_cast<veri_internal_bits_t>(0x0000000000000000UL);
-    static constexpr veri_internal_bits_t _All_1 = static_cast<veri_internal_bits_t>(0x5555555555555555UL);
-    static constexpr veri_internal_bits_t _All_x = static_cast<veri_internal_bits_t>(0xAAAAAAAAAAAAAAAAUL);
-    static constexpr veri_internal_bits_t _All_z = static_cast<veri_internal_bits_t>(0xFFFFFFFFFFFFFFFFUL);
+    static const veri_internal_bits_t _All_0 = static_cast<veri_internal_bits_t>(0x0000000000000000UL);
+    static const veri_internal_bits_t _All_1 = static_cast<veri_internal_bits_t>(0x5555555555555555UL);
+    static const veri_internal_bits_t _All_x = static_cast<veri_internal_bits_t>(0xAAAAAAAAAAAAAAAAUL);
+    static const veri_internal_bits_t _All_z = static_cast<veri_internal_bits_t>(0xFFFFFFFFFFFFFFFFUL);
 
-    static constexpr bit_value_t _0 = 0x0;
-    static constexpr bit_value_t _1 = 0x1;
-    static constexpr bit_value_t _x = 0x2;
-    static constexpr bit_value_t _z = 0x3;
+    static const bit_value_t _0 = 0x0;
+    static const bit_value_t _1 = 0x1;
+    static const bit_value_t _x = 0x2;
+    static const bit_value_t _z = 0x3;
 
     /***                                                              
      * these are taken from the raw verilog truth tables so that the evaluation are correct.
@@ -30,12 +30,12 @@ namespace BitSpace {
      * 
      *******************************************************/
 
-    static constexpr bit_value_t l_buf[4] = {
+    static const bit_value_t l_buf[4] = {
         /*	 0   1   x   z  <- a*/
             _0,_1,_x,_x
     };
 
-    static constexpr bit_value_t l_not[4] = {
+    static const bit_value_t l_not[4] = {
         /*   0   1   x   z 	<- a */
             _1,_0,_x,_x
     };
@@ -46,34 +46,34 @@ namespace BitSpace {
     #define unroll_1d_invert(lut) { l_not[lut[_0]], l_not[lut[_1]], l_not[lut[_x]], l_not[lut[_z]] }
     #define unroll_2d_invert(lut) { unroll_1d_invert(lut[_0]), unroll_1d_invert(lut[_1]), unroll_1d_invert(lut[_x]), unroll_1d_invert(lut[_z]) }
 
-    static constexpr bit_value_t l_and[4][4] = {
+    static const bit_value_t l_and[4][4] = {
         /* a  /	 0   1   x   z 	<-b */	
         /* 0 */	{_0,_0,_0,_0},	
         /* 1 */	{_0,_1,_x,_x},	
         /* x */	{_0,_x,_x,_x},	
         /* z */	{_0,_x,_x,_x}
     };
-    static constexpr bit_value_t l_nand[4][4] = 
+    static const bit_value_t l_nand[4][4] = 
         unroll_2d_invert(l_and);
 
-    static constexpr bit_value_t l_or[4][4] = {
+    static const bit_value_t l_or[4][4] = {
         /* a  /	 0   1   x   z 	<-b */	
         /* 0 */	{_0,_1,_x,_x},	
         /* 1 */	{_1,_1,_1,_1},	
         /* x */	{_x,_1,_x,_x},	
         /* z */	{_x,_1,_x,_x}
     };
-    static constexpr bit_value_t l_nor[4][4] = 
+    static const bit_value_t l_nor[4][4] = 
         unroll_2d_invert(l_or);
 
-    static constexpr bit_value_t l_xor[4][4] = {
+    static const bit_value_t l_xor[4][4] = {
         /* a  /	 0   1   x   z 	<-b */	
         /* 0 */	{_0,_1,_x,_x},	
         /* 1 */	{_1,_0,_x,_x},	
         /* x */	{_x,_x,_x,_x},	
         /* z */	{_x,_x,_x,_x}
     };
-    static constexpr bit_value_t l_xnor[4][4] = 
+    static const bit_value_t l_xnor[4][4] = 
         unroll_2d_invert(l_xor);
 
 
@@ -417,6 +417,8 @@ private:
         sign = other_sign;
     }
 
+
+
 public:
 
     VNumber(){}
@@ -426,7 +428,11 @@ public:
         delete bitstring;
     }
 
-    VNumber(VNumber const& other)
+    VNumber(VNumber&&) = default;
+    VNumber& operator=(VNumber&&) = default;
+    VNumber& operator=(const VNumber& other) = default;
+
+    VNumber(const VNumber& other)
     {
         this->sign = other.sign;
         this->bitstring = new BitSpace::VerilogBits(*other.bitstring);
@@ -436,8 +442,6 @@ public:
     {
         set_value(verilog_string);
     }
-
-
 
     VNumber(int64_t numeric_value)
     {
