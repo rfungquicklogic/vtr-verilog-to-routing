@@ -90,7 +90,6 @@ inline static std::string _radix_digit_to_bits_str(const char digit, short radix
         }
     }
     std::abort();
-    return "";
 }
 
 #define radix_digit_to_bits(num,radix) _radix_digit_to_bits(num,radix,__func__, __LINE__)

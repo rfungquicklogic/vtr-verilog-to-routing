@@ -18,7 +18,6 @@ inline static std::string _bad_ops(std::string test, const char *FUNCT, int LINE
 {	
 	std::cerr << "INVALID INPUT OPS: (" << test << ")@" << FUNCT << "::" << std::to_string(LINE) << std::endl;	
 	std::abort();
-	return "x"; 
 }
 
 /***
