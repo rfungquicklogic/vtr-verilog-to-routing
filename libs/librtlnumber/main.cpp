@@ -30,7 +30,11 @@ inline static std::string _bad_ops(std::string test, const char *FUNCT, int LINE
 
 static std::string arithmetic(std::string op, std::string a_in)
 {
+	DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
 	VNumber a(a_in);
+
+	DEBUG_MSG("a: " << a.to_string());DEBUG_NEWLINE();
 	
 	/* return Process Operator via ternary */
 	return (
@@ -51,9 +55,14 @@ static std::string arithmetic(std::string op, std::string a_in)
 
 static std::string arithmetic(std::string a_in, std::string op, std::string b_in)
 {
+	DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
 	VNumber a(a_in);
 	VNumber b(b_in);
-	
+
+	DEBUG_MSG("a: " << a.to_string());DEBUG_NEWLINE();
+	DEBUG_MSG("b: " << b.to_string());DEBUG_NEWLINE();
+
 	/* return Process Operator via ternary */
 	return (
 		(op == "&")		?		(a & b):
@@ -94,9 +103,15 @@ static std::string arithmetic(std::string a_in, std::string op, std::string b_in
 
 static std::string arithmetic(std::string a_in, std::string op1 ,std::string b_in, std::string op2, std::string c_in)
 {
+	DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
 	VNumber a(a_in);
 	VNumber b(b_in);
 	VNumber c(c_in);
+
+	DEBUG_MSG("a: " << a.to_string());DEBUG_NEWLINE();
+	DEBUG_MSG("b: " << b.to_string());DEBUG_NEWLINE();
+	DEBUG_MSG("c: " << c.to_string());DEBUG_NEWLINE();
 	
 	/* return Process Operator via ternary */
 	return(	(op1 == "?" && op2 == ":")	?	V_TERNARY(a, b, c):
@@ -105,13 +120,17 @@ static std::string arithmetic(std::string a_in, std::string op1 ,std::string b_i
 }
 
 int main(int argc, char** argv) 
-{ 
+{
+	DEBUG_NEWLINE();DEBUG_NEWLINE();DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
 	std::vector<std::string> input;
 	for(int i=0; i < argc; i++)		input.push_back(argv[i]);
 
 	if(argc == 3 && input[1] == "is_true")
 	{
 		VNumber input_2(input[2]);
+
+		DEBUG_MSG("input_2: " << input_2.to_string());DEBUG_NEWLINE();
 
 		std::cout << (V_TRUE(input_2) ? "pass" : "fail") << std::endl;
 	}
@@ -122,8 +141,13 @@ int main(int argc, char** argv)
 	else				
 	{
 		std::cout << "ERROR: Too Many Arguments: " << std::to_string(argc - 1) << "!" << std::endl;
+
+		DEBUG_MSG("End.");DEBUG_NEWLINE();
+
 		return -1;
 	}
+
+	DEBUG_MSG("End.");DEBUG_NEWLINE();
 
 	return 0;
 }

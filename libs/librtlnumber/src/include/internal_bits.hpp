@@ -425,7 +425,11 @@ public:
 
     ~VNumber()
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+        
         delete bitstring;
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
 
     VNumber(VNumber&&) = default;
@@ -434,24 +438,40 @@ public:
 
     VNumber(const VNumber& other)
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
         this->sign = other.sign;
         this->bitstring = new BitSpace::VerilogBits(*other.bitstring);
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
 
     VNumber(const std::string& verilog_string)
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
         set_value(verilog_string);
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
 
     VNumber(int64_t numeric_value)
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
         set_value(numeric_value);
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
 
     VNumber(size_t len, BitSpace::bit_value_t initial_bits, bool input_sign)
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
         this->bitstring = new BitSpace::VerilogBits(len, initial_bits);
         this->sign = input_sign;
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
     
     /***
@@ -459,6 +479,8 @@ public:
      */
     int64_t get_value()
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+        
         assert_Werr( (! this->bitstring->has_unknowns() ) ,
                     "Invalid Number contains dont care values. number: " + this->bitstring->to_string(false)
         );
@@ -479,14 +501,20 @@ public:
             result |= (current_bit << bit_index);
         }
 
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
+
         return result;
     }
 
     // convert lsb_msb bitstring to verilog
     std::string to_string()
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
         std::string out = this->bitstring->to_string(true);
         size_t len = this->bitstring->size();
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
 
         return std::to_string(len) + ((this->is_signed())? "\'sb": "\'b") + out;
     }
@@ -496,6 +524,8 @@ public:
      */
     void set_value(const std::string& input)
     {
+        DEBUG_MSG("Init:");DEBUG_NEWLINE();
+
         std::string verilog_string(input);
         if(!verilog_string.size())
             return;
@@ -566,11 +596,17 @@ public:
         size_t counter=temp_bitstring.size();
         for(char in: temp_bitstring)
             this->bitstring->set_bit(--counter,BitSpace::c_to_bit(in));
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
 
     void set_value(int64_t in)
     {
+        DEBUG_MSG("InitL");DEBUG_NEWLINE();
+
         this->set_value(std::to_string(in));
+
+        DEBUG_MSG("End.");DEBUG_NEWLINE();
     }
 
     /****
