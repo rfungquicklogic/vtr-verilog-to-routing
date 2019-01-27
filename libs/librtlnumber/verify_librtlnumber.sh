@@ -38,9 +38,15 @@ function exit_code() {
 for INPUT in ${0%/*}/regression_tests/*.csv; do
 	[ ! -f $INPUT ] && exit_code 99 "$INPUT regression test file not found!\n"
 
-	echo "Running Test File: $INPUT:"
+	echo -e "\nRunning Test File: $INPUT:"
+
+	LINE=0
 
 	while IFS= read -r input_line; do
+
+		LINE=$((LINE + 1))
+
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: LINE: $LINE\n"
 
 		#glob whitespace from line and remove everything after comment
 		input_line=$(echo ${input_line} | tr -d '[:space:]' | cut -d '#' -f1)
@@ -55,11 +61,13 @@ for INPUT in ${0%/*}/regression_tests/*.csv; do
 		if 	[ ${len} != "4" ] &&		# unary
 			[ ${len} != "5" ] &&		# binary
 			[ ${len} != "7" ]; then		# ternary
-				[ ! -z ${DEBUG} ] && echo "Malformed line is csv file: ${input_line} Skipping"
+				[ ! -z ${DEBUG} ] && echo -e "\nWARNING: Malformed Line in CSV File ($INPUT:$LINE) Input Line: ${input_line}! Skipping...\n"
 				continue
 		fi
 
-		TOTAL_TEST_RAN=$(( TOTAL_TEST_RAN+1 ))
+		TOTAL_TEST_RAN=$((TOTAL_TEST_RAN + 1))
+
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: TOTAL_TEST_RAN: $TOTAL_TEST_RAN\n"
 
 		#deal with multiplication
 		set -f
@@ -68,14 +76,42 @@ for INPUT in ${0%/*}/regression_tests/*.csv; do
 		TEST_LABEL=${arr[0]}
 		EXPECTED_RESULT=${arr[$(( len -1 ))]}
 		RTL_CMD_IN=$(printf "%s " "${arr[@]:1:$(( len -2 ))}")
-		OUTPUT_AND_RESULT=$(${0%/*}/rtl_number ${RTL_CMD_IN})
 
-		if [ "pass" == "$(${0%/*}/rtl_number is_true $(${0%/*}/rtl_number ${OUTPUT_AND_RESULT} == ${EXPECTED_RESULT}))" ]
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: TEST_LABEL: $TEST_LABEL\n"
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: EXPECTED_RESULT: $EXPECTED_RESULT\n"
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: RTL_CMD_IN: $RTL_CMD_IN\n"
+
+		# TODO: Check for Anything on standard out and any non-'0' exit codes:
+
+		OUTPUT_AND_RESULT=$(${0%/*}/rtl_number ${RTL_CMD_IN})
+		EXIT_CODE=$?
+
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: OUTPUT_AND_RESULT: $OUTPUT_AND_RESULT\n"
+		# echo -e "${0##*/}@${HOSTNAME}: DEBUG: EXIT_CODE: $EXIT_CODE\n"
+
+		if [[ 0 -ne $EXIT_CODE ]]
+		then
+			FAILURE_COUNT=$((FAILURE_COUNT+1))
+
+			# echo -e "${0##*/}@${HOSTNAME}: DEBUG: FAILURE_COUNT: $FAILURE_COUNT\n"
+
+			echo -e "\nERROR: Non-Zero Exit Code from ${0%/*}/rtl_number (on $INPUT:$LINE)\n"
+
+			echo -e "-X- FAILED == $TEST_LABEL\t  ./rtl_number ${RTL_CMD_IN}\t sOutput:<$OUTPUT_AND_RESULT> != <$EXPECTED_RESULT>"
+
+		elif [ "pass" == "$(${0%/*}/rtl_number is_true $(${0%/*}/rtl_number ${OUTPUT_AND_RESULT} == ${EXPECTED_RESULT}))" ]
 		then
 			echo "--- PASSED == $TEST_LABEL"
+
 		else
 			FAILURE_COUNT=$((FAILURE_COUNT+1))
+
+			# echo -e "${0##*/}@${HOSTNAME}: DEBUG: FAILURE_COUNT: $FAILURE_COUNT\n"
+
+			echo -e "\nERROR: Expected Result Didn't match what we got back from ${0%/*}/rtl_number (on $INPUT:$LINE)\n"
+
 			echo -e "-X- FAILED == $TEST_LABEL\t  ./rtl_number ${RTL_CMD_IN}\t sOutput:<$OUTPUT_AND_RESULT> != <$EXPECTED_RESULT>"
+
 		fi
 
 		#unset the multiplication token override
